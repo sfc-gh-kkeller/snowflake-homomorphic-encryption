@@ -1,0 +1,17 @@
+# Copy to config.toml (gitignored) and adjust. Every value can also be set via environment variables
+# (HE_CONNECTION, HE_ROLE, HE_WAREHOUSE, HE_DATABASE, HE_SCHEMA, HE_N_EMPLOYEES, HE_SEED, HE_KEY_DIR).
+
+[snowflake]
+# Name of a connection in ~/.snowflake/connections.toml. Empty = your default connection.
+connection_name = ""
+# Role needs CREATE DATABASE (or ownership of the target database) and USAGE on the warehouse.
+role = "SYSADMIN"
+# Empty = the connection's default warehouse.
+warehouse = ""
+database = "HE_DEMO"
+schema = "PYFHEL"
+
+[demo]
+n_employees = 100          # each row carries ~1.6 MB of ciphertext (3 BFV + 5 CKKS columns)
+seed = 42                  # synthetic data is deterministic for a given seed
+key_dir = "keys"           # secret keys live here, never uploaded (gitignored)

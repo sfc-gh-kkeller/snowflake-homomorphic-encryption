@@ -1,0 +1,22 @@
+snowflake-homomorphic-encryption
+Copyright 2026 Kevin Keller
+
+This project is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This repository includes third-party software in vendor/:
+
+* Pyfhel 3.4.2 (https://github.com/ibarrond/Pyfhel)
+  Copyright Alberto Ibarrondo, Alexander Viand and contributors.
+  Licensed under the Apache License, Version 2.0 (vendor/Pyfhel-3.4.2/LICENSE.txt).
+  Modified: bundled Microsoft SEAL upgraded to 4.1.2 and SEAL_USE_ZLIB disabled.
+  See vendor/PATCHES.md for details.
+
+* Microsoft SEAL 4.1.2 (https://github.com/microsoft/SEAL)
+  Copyright (c) Microsoft Corporation.
+  Licensed under the MIT License (vendor/Pyfhel-3.4.2/Pyfhel/backend/SEAL/LICENSE).
+
+At build time, Microsoft SEAL's CMake configuration downloads Zstandard (BSD/GPLv2 dual-licensed) and
+Microsoft GSL (MIT). They are not included in this repository.
+
+Inside Snowflake, the user-defined functions use the pyfhel and numpy packages from Snowflake's Anaconda
+channel, subject to the Snowflake Anaconda terms.

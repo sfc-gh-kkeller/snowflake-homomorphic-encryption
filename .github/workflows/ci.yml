@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-tests:
+    # Builds the vendored Pyfhel 3.4.2 + SEAL 4.1.2 and runs every UDF handler locally against a
+    # public-context-only Pyfhel instance. No Snowflake credentials are needed.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.11.2
+        with:
+          locked: true
+          cache: true
+      - run: pixi run check
+      - run: pixi run test -v
+      - name: notebook sources are valid jupytext
+        run: pixi run jupytext --to ipynb --output - notebooks/01_basics.py > /dev/null

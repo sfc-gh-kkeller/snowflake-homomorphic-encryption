@@ -1,0 +1,66 @@
+[workspace]
+name = "snowflake-homomorphic-encryption"
+version = "0.2.0"
+description = "Compute on encrypted columns in Snowflake with Pyfhel (BFV + CKKS): client-held keys, homomorphic UDFs/UDAFs in a standard warehouse"
+authors = ["Kevin Keller"]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "linux-64", "linux-aarch64"]
+
+[activation.env]
+PYTHONPATH = "$PIXI_PROJECT_ROOT/src"
+
+[dependencies]
+# Match the Snowflake UDF runtime: Python 3.11, numpy<2 (Anaconda pyfhel 3.4.2 is built against numpy 1.x)
+python = "3.11.*"
+numpy = "1.26.4.*"
+pandas = ">=2.1,<2.3"
+pyarrow = ">=24.0.0,<25"
+snowflake-snowpark-python = ">=1.20"
+jupyterlab = ">=4"
+ipykernel = "*"
+nbconvert = "*"
+jupytext = ">=1.16"
+matplotlib = "*"
+pytest = ">=8"
+# Toolchain to build the vendored Pyfhel 3.4.2 + Microsoft SEAL 4.1.2 from source
+cxx-compiler = "*"
+c-compiler = "*"
+cmake = ">=3.15,<4"
+make = "*"
+git = "*"
+setuptools = "<61"
+wheel = "*"
+cython = ">=3.0,<3.1"
+toml = ">=0.10"
+
+[target.osx-arm64.dependencies]
+# Apple clang ships without OpenMP; Pyfhel compiles with -fopenmp
+llvm-openmp = "*"
+
+# SEAL's CMake looks for an unprefixed `ar`; conda-forge's compilers only ship target-prefixed binutils, and
+# minimal images (e.g. the pixi Docker image) have no system binutils. Pyfhel's setup.py would otherwise
+# silently build a wheel without libseal.
+[target.linux-64.dependencies]
+binutils = "*"
+
+[target.linux-aarch64.dependencies]
+binutils = "*"
+
+[pypi-dependencies]
+# PyPI only ships an sdist for Pyfhel 3.4.2. The vendored copy is patched so local ciphertexts load in
+# Snowflake's Anaconda build (SEAL 4.1) -- see vendor/PATCHES.md.
+Pyfhel = { path = "vendor/Pyfhel-3.4.2" }
+
+[pypi-options]
+no-build-isolation = ["Pyfhel"]
+
+[tasks]
+check = "python -c 'import numpy, Pyfhel; print(\"numpy\", numpy.__version__, \"| Pyfhel\", Pyfhel.__version__)'"
+test = "pytest -m 'not snowflake'"
+deploy = "python -m he_snowflake.deploy"
+load = "python -m he_snowflake.load"
+test-snowflake = "pytest -m snowflake"
+notebooks = "jupytext --to ipynb --update notebooks/*.py"
+demo = { cmd = "jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=1800 notebooks/*.ipynb", depends-on = ["notebooks"] }
+lab = { cmd = "jupyter lab notebooks", depends-on = ["notebooks"] }
+clean-snowflake = "python -m he_snowflake.deploy --drop"
